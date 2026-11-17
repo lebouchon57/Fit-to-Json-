@@ -1,7 +1,7 @@
 {
-  "name": "FIT to CSV — Convertisseur Garmin pour Gemini",
-  "short_name": "FIT to CSV",
-  "description": "Convertissez vos fichiers d'activité Garmin .FIT en .CSV UTF-8 directement sur mobile, hors-ligne, prêt pour Google Gemini.",
+  "name": "FIT to JSON — Synthèse Garmin pour Gemini",
+  "short_name": "FIT to JSON",
+  "description": "Synthétisez vos fichiers d'activité Garmin .FIT en .JSON structuré directement sur mobile, hors-ligne, prêt pour Google Gemini.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
