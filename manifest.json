@@ -1,0 +1,33 @@
+{
+  "name": "FIT to CSV — Convertisseur Garmin pour Gemini",
+  "short_name": "FIT to CSV",
+  "description": "Convertissez vos fichiers d'activité Garmin .FIT en .CSV UTF-8 directement sur mobile, hors-ligne, prêt pour Google Gemini.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#0C0E14",
+  "background_color": "#0C0E14",
+  "lang": "fr",
+  "categories": ["sports", "utilities", "productivity"],
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

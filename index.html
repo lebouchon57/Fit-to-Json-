@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0C0E14" />
+  <meta name="description" content="Convertissez vos fichiers Garmin .FIT en .CSV UTF-8 pour analyse dans Google Gemini, hors-ligne et installable sur mobile." />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="FIT to CSV" />
+
+  <title>FIT to CSV — Convertisseur Garmin pour Gemini</title>
+
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <!-- PWA Install Prompt Banner -->
+    <div id="install-banner" class="install-banner hidden">
+      <span>Installer l'app hors-ligne sur votre écran d'accueil</span>
+      <div class="install-banner-actions">
+        <button id="btn-install-pwa" class="btn-install" type="button">Installer</button>
+        <button id="btn-dismiss-install" class="btn-dismiss" type="button" aria-label="Fermer">&times;</button>
+      </div>
+    </div>
+
+    <main class="split-container">
+      <!-- Part 1: Google Drive / .FIT Source -->
+      <section id="drive-panel" class="panel-card drive-panel" aria-label="Source fichier FIT">
+        <header class="panel-header">
+          <div class="logo-box logo-box-light" aria-hidden="true">
+            <!-- Google Drive Logo SVG -->
+            <svg width="28" height="28" viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg">
+              <path d="m6.6 66.85 3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8h-27.5c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>
+              <path d="m43.65 25-13.75-23.8c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44a9.06 9.06 0 0 0 -1.2 4.5h27.5z" fill="#00ac47"/>
+              <path d="m73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5h-27.502l5.852 11.5z" fill="#ea4335"/>
+              <path d="m43.65 25 13.75-23.8c-1.35-.8-2.9-1.2-4.5-1.2h-18.5c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"/>
+              <path d="m59.8 53h-32.3l-13.75 23.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.45 4.5-1.2z" fill="#2684fc"/>
+              <path d="m73.4 26.5-12.7-22c-.8-1.4-1.95-2.5-3.3-3.3l-13.75 23.8 16.15 28h27.45c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"/>
+            </svg>
+          </div>
+          <div>
+            <div class="header-title-row">
+              <h1 class="title-fit">.FIT</h1>
+              <span class="badge-drive">Google Drive</span>
+            </div>
+            <p class="subtitle-light">Fichiers d'activités Garmin</p>
+          </div>
+        </header>
+
+        <input id="fit-file-input" class="hidden-input" type="file" accept=".fit,.FIT,*/*" />
+        <button id="btn-pick-fit" class="btn-primary-drive" type="button">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
+          </svg>
+          <span>Sélectionner un fichier .FIT</span>
+        </button>
+
+        <div id="fit-error-box" class="error-box-light hidden" role="alert">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M11 15h2v2h-2zm0-8h2v6h-2zm.99-5C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/>
+          </svg>
+          <span id="fit-error-text"></span>
+        </div>
+
+        <div class="status-surface-light">
+          <div id="fit-empty-state" class="empty-state">
+            <div class="empty-icon-circle empty-icon-light" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M2 20h20v-4H2v4zm2-3h2v2H4v-2zM2 4v4h20V4H2zm4 3H4V5h2v2zm-4 7h20v-4H2v4zm2-3h2v2H4v-2z"/>
+              </svg>
+            </div>
+            <p class="empty-title-light">Aucun fichier sélectionné</p>
+            <p class="empty-sub-light">Choisissez un fichier .fit Garmin depuis votre Drive ou téléphone</p>
+          </div>
+
+          <div id="fit-selected-state" class="hidden">
+            <div class="selected-file-row">
+              <div class="file-icon-box" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M6 2c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6H6zm7 7V3.5L18.5 9H13z"/>
+                </svg>
+              </div>
+              <div class="file-meta">
+                <div id="selected-file-name" class="file-name">activity.fit</div>
+                <div class="file-details">
+                  <strong id="selected-file-size">0 KB</strong> • <span>Google Drive / Stockage</span>
+                </div>
+              </div>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="#0F9D58" aria-label="Prêt">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+              </svg>
+            </div>
+            <div class="ready-banner">Prêt pour conversion vers CSV Gemini</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Middle Adaptive Divider & Conversion Button -->
+      <div class="divider-zone">
+        <div class="divider-line" aria-hidden="true"></div>
+        <div class="convert-halo">
+          <button
+            id="btn-convert"
+            class="convert-btn"
+            type="button"
+            aria-label="Convertir .FIT vers .CSV"
+            title="Convertir .FIT vers .CSV"
+          >
+            <svg class="arrow-icon" width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Part 2: Gemini / .CSV Destination -->
+      <section class="panel-card gemini-panel" aria-label="Destination CSV Gemini">
+        <header class="panel-header">
+          <div class="logo-box logo-box-dark" aria-hidden="true">
+            <!-- Gemini Sparkle SVG -->
+            <svg width="28" height="28" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="geminiGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#93C5FD"/>
+                  <stop offset="50%" stop-color="#A855F7"/>
+                  <stop offset="100%" stop-color="#38BDF8"/>
+                </linearGradient>
+              </defs>
+              <path d="M12 2C12.7 7.2 16.8 11.3 22 12C16.8 12.7 12.7 16.8 12 22C11.3 16.8 7.2 12.7 2 12C7.2 11.3 11.3 7.2 12 2Z" fill="url(#geminiGrad)"/>
+              <path d="M19.5 2C19.8 3.6 20.9 4.7 22.5 5C20.9 5.3 19.8 6.4 19.5 8C19.2 6.4 18.1 5.3 16.5 5C18.1 4.7 19.2 3.6 19.5 2Z" fill="#E0E7FF"/>
+            </svg>
+          </div>
+          <div>
+            <div class="header-title-row">
+              <h2 class="title-csv">.CSV</h2>
+              <span class="badge-gemini">Google Gemini</span>
+            </div>
+            <p class="subtitle-dark">Format UTF-8 joint pour analyse IA</p>
+          </div>
+        </header>
+
+        <!-- Idle State -->
+        <div id="gemini-idle-state" class="status-surface-dark empty-state">
+          <div class="empty-icon-circle empty-icon-dark" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 9l1.25-2.75L23 5l-2.75-1.25L19 1l-1.25 2.75L15 5l2.75 1.25L19 9zm-7.5.5L9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5z"/>
+            </svg>
+          </div>
+          <p class="empty-title-dark">En attente de conversion</p>
+          <p class="empty-sub-dark">Appuyez sur la flèche centrale pour convertir</p>
+        </div>
+
+        <!-- Converting State -->
+        <div id="gemini-loading-state" class="status-surface-dark empty-state hidden">
+          <div class="spinner" aria-hidden="true"></div>
+          <p class="empty-title-dark">Décodage FIT et génération CSV...</p>
+          <p class="empty-sub-dark">Extraction GPS, FC, vitesse et puissance</p>
+        </div>
+
+        <!-- Error State -->
+        <div id="gemini-error-state" class="error-box-dark hidden" role="alert">
+          <strong>Erreur de conversion</strong>
+          <span id="gemini-error-text"></span>
+        </div>
+
+        <!-- Success State -->
+        <div id="gemini-success-state" class="hidden">
+          <div class="status-surface-dark">
+            <div class="metrics-header">
+              <span id="csv-points-badge" class="points-badge">0 points • 0 KB</span>
+              <span class="utf8-badge">CSV UTF-8</span>
+            </div>
+            <div class="metrics-grid">
+              <div class="metric-chip">
+                <span class="metric-label">Distance</span>
+                <span id="metric-distance" class="metric-value">-- km</span>
+              </div>
+              <div class="metric-chip">
+                <span class="metric-label">FC Moyenne</span>
+                <span id="metric-hr" class="metric-value">--</span>
+              </div>
+              <div class="metric-chip">
+                <span class="metric-label">Vitesse Moy.</span>
+                <span id="metric-speed" class="metric-value">--</span>
+              </div>
+              <div class="metric-chip">
+                <span class="metric-label">Puissance</span>
+                <span id="metric-power" class="metric-value">--</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="gemini-actions" style="margin-top: 10px;">
+            <button id="btn-open-gemini" class="btn-gemini-open" type="button">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff" aria-hidden="true">
+                <path d="M12 2C12.7 7.2 16.8 11.3 22 12C16.8 12.7 12.7 16.8 12 22C11.3 16.8 7.2 12.7 2 12C7.2 11.3 11.3 7.2 12 2Z"/>
+              </svg>
+              <span class="btn-gemini-text">
+                <span class="btn-gemini-title">Ouvrir dans Google Gemini</span>
+                <span class="btn-gemini-sub">Partage direct avec le fichier CSV joint</span>
+              </span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/>
+              </svg>
+            </button>
+
+            <button id="btn-save-csv" class="btn-save-csv" type="button">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+              </svg>
+              <span>Sauvegarder le fichier .CSV</span>
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

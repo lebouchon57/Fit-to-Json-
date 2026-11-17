@@ -1,0 +1,6 @@
+{
+  "name": "FIT to CSV",
+  "description": "Convert Garmin .FIT activity files into clean .CSV datasets for Google Gemini analysis with a Drive-to-Gemini split-screen interface.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
